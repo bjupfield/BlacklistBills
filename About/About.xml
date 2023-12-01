@@ -1,0 +1,44 @@
+<!--<?xml version ="1.0" encoding ="utf-8"?>-->
+<ModMetaData>
+	<!-- THIS IS THE BASIC STRUCTURE For more information got to  https://rimworldwiki.com/wiki/Modding_Tutorials/About.xml-->
+	<!-- As you Might Notice there is a png named Preview in this folder too, it is also required-->
+	
+	<!-- Essential Tags-->
+		<name>BlacklistBill</name>
+		<author>LucidPelican</author>
+	<packageId>Pelican.BlacklistBill</packageId>
+	<description>This Mod allows the creation of a bill with blacklisted pawns. To blacklist a pawn choose the bill than select that pawn in the bill dialoq. Notice the blacklist Button, select correct option.</description>
+	<supportedVersions>
+		<li>1.4</li>
+	</supportedVersions>
+
+	<modDependencies>
+		<li>
+			<packageId>brrainz.harmony</packageId>
+			<displayName>Harmony</displayName>
+			<steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+		</li>
+	</modDependencies>
+	
+	<!-- I think this stuff above is pretty self-explanatory, the packageId is what other mods search for to test compatability so just make it easily readable, the name is the name of the mod, the author is the author
+	the description is the description and the supportedVersions are the versions of rimworld that the mod supports
+	-->
+	
+	
+	<!-- Optional Tags -->
+	<!-- These tags below are optional, again check link to see what they do more clearly, but below are some that I think are quite important-->
+	<!--
+	<modVersion>1.0</modVersion>
+	
+	<url>hmm</url>
+	
+	Url to mod download page 
+	
+	<modDependencies>
+		<li></li>
+	</modDependencies>
+	
+	Mods that the mod is dependent on 
+	-->
+
+</ModMetaData>
