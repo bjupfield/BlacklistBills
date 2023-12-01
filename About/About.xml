@@ -19,6 +19,8 @@
 			<steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
 		</li>
 	</modDependencies>
+
+	<url>https://github.com/bjupfield/BlacklistBills</url>
 	
 	<!-- I think this stuff above is pretty self-explanatory, the packageId is what other mods search for to test compatability so just make it easily readable, the name is the name of the mod, the author is the author
 	the description is the description and the supportedVersions are the versions of rimworld that the mod supports
@@ -30,7 +32,7 @@
 	<!--
 	<modVersion>1.0</modVersion>
 	
-	<url>hmm</url>
+	<url>hmmm</url>
 	
 	Url to mod download page 
 	
