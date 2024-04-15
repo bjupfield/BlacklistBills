@@ -70,74 +70,92 @@ public static class Dialog_BillConfig_ChangeDialog_Patch
                 }
             }
         }
-        //this removes the code if ti finds it
+        int adjustPoint = 2;
+        while (!(lineList[adjustPoint].ToString().Contains("ldloc") && lineList[adjustPoint - 1].ToString().Contains("pop") && lineList[adjustPoint - 2].ToString().Contains("Listing_Standard::IntRange")))
+        {
+            adjustPoint++;
+        }
+        int copyPoint = 2;
+        while (!(lineList[copyPoint + 1].ToString().Contains("ldloc") && lineList[copyPoint].ToString().Contains("brtrue") && lineList[copyPoint + 2].ToString().Contains("AllowedSkillRange")))
+        {
+            copyPoint++;
+        }
+        //start int = startint - 1 = copypoint
+        int jt3 = copyPoint;//need it to add il code to later
+        while (!(lineList[copyPoint].ToString().Contains("ldarg")))
+        {
+            copyPoint++;
+        }
+        CodeInstruction secondCopy = new CodeInstruction(OpCodes.Add, null);
+        secondCopy.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
+        secondCopy.opcode = lineList[copyPoint].opcode;
+        while (!(lineList[copyPoint].ToString().Contains("get_PawnRestriction")))
+        {
+            copyPoint--;
+        }
+        CodeInstruction get_pawnRestriction = new CodeInstruction(OpCodes.Add, null);
+        get_pawnRestriction.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
+        get_pawnRestriction.opcode = lineList[copyPoint].opcode;
+        while (!(lineList[copyPoint].ToString().Contains("Dialog_BillConfig::bill")))
+        {
+            copyPoint++;
+        }
+        CodeInstruction ldfld_billconfig_bill = new CodeInstruction(OpCodes.Add, null);
+        ldfld_billconfig_bill.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
+        ldfld_billconfig_bill.opcode = lineList[copyPoint].opcode;
+        while (!(lineList[copyPoint].ToString().Contains("ButtonText")))
+        {
+            copyPoint++;
+        }
+        CodeInstruction list_button_text = new CodeInstruction(OpCodes.Add, null);
+        list_button_text.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
+        list_button_text.opcode = lineList[copyPoint].opcode;
+        while (!(lineList[copyPoint].ToString().Contains("SoundDefOf")))
+        {
+            copyPoint++;
+        }
+        CodeInstruction SoundDefOf = new CodeInstruction(OpCodes.Add, null);
+        SoundDefOf.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
+        SoundDefOf.opcode = lineList[copyPoint].opcode;
+        while (!(lineList[copyPoint].ToString().Contains("PlayOneShotOnCamera")))
+        {
+            copyPoint++;
+        }
+        CodeInstruction PlayOneShot = new CodeInstruction(OpCodes.Add, null);
+        PlayOneShot.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
+        PlayOneShot.opcode = lineList[copyPoint].opcode;
 
 
         if (startInt != -1 && endInt != -1)
         {
-            int jt3 = startInt - 1;
 
             //this section creates the if statement
-            int myStatementStartPos = endInt + 1;
             List<CodeInstruction> myInstructs = new List<CodeInstruction>();
-            myInstructs.Add(new CodeInstruction(OpCodes.Neg));
-            myInstructs[0].opcode = lineList[startInt + 2].opcode;
-            myInstructs[0].operand = lineList[startInt + 2].operand;
-            myInstructs.Add(new CodeInstruction(OpCodes.Neg));
-            myInstructs[1].opcode = OpCodes.Ldfld;
-            myInstructs[1].operand = lineList[startInt + 3].operand;
-            myInstructs.Add(lineList[startInt - 11]);//this is callvirt instance class Verse.Pawn RimWorld.Bill::get_PawnRestriction()?
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldarg_0, null));
+            myInstructs.Add(ldfld_billconfig_bill);
+            myInstructs.Add(get_pawnRestriction);//this is callvirt instance class Verse.Pawn RimWorld.Bill::get_PawnRestriction()?
             myInstructs.Add(new CodeInstruction(OpCodes.Brfalse_S));//might need to be true
             int jf1 = myInstructs.Count - 1;
-            //test just words statement
-            //myInstructs.Add(new CodeInstruction(OpCodes.Br, lineList[jt3].operand));
-            //myInstructs.Add(new CodeInstruction(OpCodes.Ldloc_S, 24));
-            //myInstructs.Add(new CodeInstruction(OpCodes.Ldstr, "Hithere"));
-            //myInstructs.Add(new CodeInstruction(OpCodes.Ldc_R4, -1));
-            //myInstructs.Add(new CodeInstruction(OpCodes.Ldnull));
             Type[] forFunc = { typeof(string), typeof(Int32), typeof(string)};
-            //myInstructs.Add(CodeInstruction.Call(typeof(Verse.Listing_Standard), "Label", forFunc));
-            //myInstructs.Add(new CodeInstruction(OpCodes.Pop));
-            //myInstructs.Add(new CodeInstruction(OpCodes.Ldarg_1));
 
-
-            //end of if statement
-            //start of button statements
-            //add gap statement
-            //myInstructs.Add(new CodeInstruction(OpCodes.Ldloc_S, 24));
-            //myInstructs.Add(new CodeInstruction(OpCodes.Ldc_R4, 1.0f));
-            //myInstructs.Add(CodeInstruction.Call(typeof(Verse.Listing), "Gap"));
-
-            //add begin rect statement
-
-            //myInstructs.Add(new CodeInstruction(OpCodes.Ldloc_S, 24));
-            //myInstructs.Add(new CodeInstruction(OpCodes.Ldloc_1));
-            //myInstructs.Add(CodeInstruction.Call(typeof(Verse.Listing), "Begin"));
 
 
             //if statment for if(blackListAddon.checkInstance(bill))
 
 
             myInstructs.Add(new CodeInstruction(OpCodes.Ldarg_0));
-            myInstructs.Add(lineList[startInt + 3]);//this is ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+            myInstructs.Add(ldfld_billconfig_bill);//this is ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
             myInstructs.Add(CodeInstruction.Call(typeof(BillBlacklist.BlacklistAddon), "checkInstance"));
             myInstructs.Add(new CodeInstruction(OpCodes.Brfalse));//need to add operand label to this
             int jf2 = myInstructs.Count - 1;//need to jump to second if statement: else if(listingstandard4.buttontext("NotBlacklisted".Translate()))
-            //like
-            //myInstructs[thirdSaved].operand = wherever ist supposed to go
 
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldloc_S, 21));
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldstr, "BlackListed"));//blacklisted
 
-            //end of if statement
-            //if statement for if(listingstandard4.buttontext("Blacklist".Translate()))
-
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldloc_S, 24));
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldstr, "Blacklisted"));
-            //myInstructs.Add(lineList[endInt + 29]);//this is call valuetype Verse.TaggedString Verse.Translator::Translate(string)
-            //myInstructs.Add(lineList[endInt + 30]);//this is call string Verse.TaggedString::op_Implicit(valuetype Verse.TaggedString)
             // I dont know for some reason translate doesnt work not going to question it, might need to actually have the word blacklisted in it or something
             myInstructs.Add(new CodeInstruction(OpCodes.Ldnull));
             myInstructs.Add(new CodeInstruction(OpCodes.Ldc_R4, 1.0f));
-            myInstructs.Add(lineList[endInt + 33]);//this is callvirt instance bool Verse.Listing_Standard::ButtonText(string, string, float32)
+            myInstructs.Add(list_button_text);//this is callvirt instance bool Verse.Listing_Standard::ButtonText(string, string, float32)
             myInstructs.Add(new CodeInstruction(OpCodes.Brfalse_S));//needs to send to start of the next if statement, this is [11]
             int jf3 = myInstructs.Count - 1;
 
@@ -148,34 +166,32 @@ public static class Dialog_BillConfig_ChangeDialog_Patch
             //SoundDefOf.CLick.PLayOneShotOnCamera();
 
             myInstructs.Add(new CodeInstruction(OpCodes.Ldarg_0));
-            myInstructs.Add(lineList[startInt + 3]);//this is ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+            myInstructs.Add(ldfld_billconfig_bill);//this is ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
             myInstructs.Add(new CodeInstruction(OpCodes.Ldc_I4, 0));
             myInstructs.Add(CodeInstruction.Call(typeof(BillBlacklist.BlacklistAddon), "changeInstance"));
             myInstructs.Add(new CodeInstruction(OpCodes.Pop));
 
-            myInstructs.Add(lineList[endInt + 39]);//this is ldsfld class Verse.SoundDef RimWorld.SoundDefOf::Click
-            myInstructs.Add(lineList[endInt + 40]);//this is ldnull, obviously didnt need to do this one but thought it would be more clear
-            myInstructs.Add(lineList[endInt + 41]);//call void Verse.Sound.SoundStarter::PlayOneShotOnCamera(class Verse.SoundDef, class Verse.Map)
+            myInstructs.Add(SoundDefOf);//this is ldsfld class Verse.SoundDef RimWorld.SoundDefOf::Click
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldnull, null));//this is ldnull, obviously didnt need to do this one but thought it would be more clear
+            myInstructs.Add(PlayOneShot);//call void Verse.Sound.SoundStarter::PlayOneShotOnCamera(class Verse.SoundDef, class Verse.Map)
             //end of stateement
             //jump over statement because it needs to be else if, and else needs to be jumped over if it is true
 
             myInstructs.Add(new CodeInstruction(OpCodes.Br));//need to add an operand of label to this one too
             int jf4 = myInstructs.Count - 1;
             int jt1 = jf4;
-            //like
-            //myInstructs[secondSaved].operand = wherever ist supposed to go
-            //end of jump over statements
+
             //if statement for if statement section if(listingstandard4.buttontext("NotBlacklisted".Translate()))
 
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldloc_S, 24));
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldloc_S, 21));
             int jt2 = myInstructs.Count - 1;
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldstr, "Not Blacklisted"));
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldstr, "Not Blacklisted"));//not blacklisted
             //myInstructs.Add(lineList[endInt + 29]);//this is call valuetype Verse.TaggedString Verse.Translator::Translate(string)
             //myInstructs.Add(lineList[endInt + 30]);//this is call string Verse.TaggedString::op_Implicit(valuetype Verse.TaggedString)
             // I dont know for some reason translate doesnt work not going to question it, might need to actually have the word blacklisted in it or something
             myInstructs.Add(new CodeInstruction(OpCodes.Ldnull));
             myInstructs.Add(new CodeInstruction(OpCodes.Ldc_R4, 1.0f));
-            myInstructs.Add(lineList[endInt + 33]);//this is callvirt instance bool Verse.Listing_Standard::ButtonText(string, string, float32)
+            myInstructs.Add(list_button_text) ;//this is callvirt instance bool Verse.Listing_Standard::ButtonText(string, string, float32)
             myInstructs.Add(new CodeInstruction(OpCodes.Brfalse_S));//needs to send to after the next statement, this is [11]
             int jf5 = myInstructs.Count - 1;
 
@@ -185,14 +201,14 @@ public static class Dialog_BillConfig_ChangeDialog_Patch
             //SoundDefOf.Click.PlayOneShotOnCamera();
 
             myInstructs.Add(new CodeInstruction(OpCodes.Ldarg_0));
-            myInstructs.Add(lineList[startInt + 3]);//this is ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+            myInstructs.Add(ldfld_billconfig_bill);//this is ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
             myInstructs.Add(new CodeInstruction(OpCodes.Ldc_I4, 1));
             myInstructs.Add(CodeInstruction.Call(typeof(BillBlacklist.BlacklistAddon), "changeInstance"));
             myInstructs.Add(new CodeInstruction(OpCodes.Pop));
 
-            myInstructs.Add(lineList[endInt + 39]);//this is ldsfld class Verse.SoundDef RimWorld.SoundDefOf::Click
-            myInstructs.Add(lineList[endInt + 40]);//this is ldnull, obviously didnt need to do this one but thought it would be more clear
-            myInstructs.Add(lineList[endInt + 41]);//call void Verse.Sound.SoundStarter::PlayOneShotOnCamera(class Verse.SoundDef, class Verse.Map)
+            myInstructs.Add(SoundDefOf);//this is ldsfld class Verse.SoundDef RimWorld.SoundDefOf::Click
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldnull, null));//this is ldnull, obviously didnt need to do this one but thought it would be more clear
+            myInstructs.Add(PlayOneShot);//call void Verse.Sound.SoundStarter::PlayOneShotOnCamera(class Verse.SoundDef, class Verse.Map)
 
             //end of statement
             //assignments of jump values, basically just saying at the end of if statements jump to after the new statement that I just made
@@ -217,21 +233,15 @@ public static class Dialog_BillConfig_ChangeDialog_Patch
 
             //set pawn == null to send to our function, as it checks that before the allowed skill range
             //retrieve it
-            int brtrueCount = 0;
-            int brAdjust = startInt;
-            while (brtrueCount < 2 && brAdjust > 0)
+            while (!(lineList[copyPoint].ToString().Contains("brtrue") && lineList[copyPoint - 1].ToString().Contains("get_PawnRestriction") && lineList[copyPoint - 2].ToString().Contains("Dialog_BillConfig::bill") && lineList[copyPoint + 1].ToString().Contains("ldarg")))
             {
-                brAdjust--;
-                if (lineList[brAdjust].opcode == OpCodes.Brtrue_S)
-                {
-                    ++brtrueCount;
-                }
+                copyPoint--;
             }
-            //assogn it
-            lineList[brAdjust].operand = jtStart;
+            ////assogn it
+            lineList[copyPoint].operand = jtStart;
 
-            ////////////////////////////////////////////////////////////////
-            lineList.InsertRange(myStatementStartPos, myInstructs);
+            //////////////////////////////////////////////////////////////////
+            lineList.InsertRange(adjustPoint, myInstructs);
 
         }
 
