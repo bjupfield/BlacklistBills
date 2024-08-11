@@ -24,6 +24,7 @@ namespace BillBlacklist
             Harmony harmony = new Harmony("rimworld.mod.Pelican.BillBlackList");
             Harmony.DEBUG = true;
             harmony.PatchAll();
+            Verse.Log.Warning("My Thing has loaded");
 
         }
     }
@@ -32,6 +33,7 @@ namespace BillBlacklist
 [HarmonyPatch(nameof(Dialog_BillConfig.DoWindowContents))]
 public static class Dialog_BillConfig_ChangeDialog_Patch
 {
+
     [HarmonyTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> lines, ILGenerator il)
     {
@@ -253,6 +255,7 @@ public static class Dialog_BillConfig_ChangeDialog_Patch
 [HarmonyPatch(nameof(Bill.PawnAllowedToStartAnew))]
 public static class PawnAllowedToStartAnew_Patch
 {
+
     [HarmonyTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> lines, ILGenerator il)
     {
@@ -314,6 +317,7 @@ public static class PawnAllowedToStartAnew_Patch
 [HarmonyPatch(nameof(BillStack.Delete))]
 public static class DeleteBill_Change
 {
+
     [HarmonyTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> lines, ILGenerator il)
     {
