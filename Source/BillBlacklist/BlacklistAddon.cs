@@ -12,6 +12,7 @@ namespace BillBlacklist
     { 
         public static int checkInstance(Bill myBill)
         {
+            if(myBill == null) return 0;
             Map map = myBill.Map;
             MapComponent_BlacklistHold b = map.GetComponent<MapComponent_BlacklistHold>();
             if(b == null)
@@ -23,13 +24,11 @@ namespace BillBlacklist
         }
         public static int changeInstance(Bill myBill, int change)
         {
-            Verse.Log.Warning("Fires");
-            Verse.Log.Warning("Fired");
+            if (myBill == null) return 0;
             Map map = myBill.Map;
             MapComponent_BlacklistHold b = map.GetComponent<MapComponent_BlacklistHold>();
             if (b == null)
             {
-                Verse.Log.Warning("Had to create instance");
                 b = new MapComponent_BlacklistHold(map);
                 map.components.Add(b);
             }
@@ -37,17 +36,18 @@ namespace BillBlacklist
         }
         public static int deleteInstance(Bill myBill)
         {
-            Map map = myBill.Map;
-            MapComponent_BlacklistHold b = map.GetComponent<MapComponent_BlacklistHold>();
-            if (b == null)
-            {
-                b = new MapComponent_BlacklistHold(map);
-                map.components.Add(b);
-            }
-            else
-            {
-                b.deleteInstance(myBill);
-            }
+            if (myBill != null) return 0;
+                Map map = myBill.Map;
+                MapComponent_BlacklistHold b = map.GetComponent<MapComponent_BlacklistHold>();
+                if (b == null)
+                {
+                    b = new MapComponent_BlacklistHold(map);
+                    map.components.Add(b);
+                }
+                else
+                {
+                    b.deleteInstance(myBill);
+                }
             return 0;
         }
 
@@ -107,7 +107,15 @@ namespace BillBlacklist
         }
         public int deleteInstance(Bill myBill)
         {
-            blackListedReferences.Remove(myBill);
+            Dictionary<Bill, int> temp = new Dictionary<Bill, int>();
+            foreach (var item in blackListedReferences)
+            {
+                if(item.Key != null && item.Key != myBill)
+                {
+                    temp.Add(item.Key, item.Value);
+                }
+            }
+            blackListedReferences = temp;
             return 0;
         }
     }

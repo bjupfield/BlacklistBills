@@ -21,10 +21,9 @@ namespace BillBlacklist
         static BillBlackList()
         {
 
-            Harmony harmony = new Harmony("rimworld.mod.Pelican.BillBlackList");
+            Harmony harmony = new Harmony("rimworld.mod.Nutmeg.BillBlackList");
             Harmony.DEBUG = true;
             harmony.PatchAll();
-            Verse.Log.Warning("My Thing has loaded");
 
         }
     }
