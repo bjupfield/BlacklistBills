@@ -22,7 +22,7 @@ namespace BillBlacklist
         {
 
             Harmony harmony = new Harmony("rimworld.mod.Nutmeg.BillBlackList");
-            Harmony.DEBUG = true;
+            Harmony.DEBUG = false;//lol
             harmony.PatchAll();
 
         }
