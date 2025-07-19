@@ -1,6 +1,6 @@
 <!--<?xml version ="1.0" encoding ="utf-8"?>-->
 <ModMetaData>
-	<!-- THIS IS THE BASIC STRUCTURE For more information got to  https://rimworldwiki.com/wiki/Modding_Tutorials/About.xml-->
+	<!-- THIS IS THE BASIC STRUCTURE For more information go to  https://rimworldwiki.com/wiki/Modding_Tutorials/About.xml-->
 	<!-- As you Might Notice there is a png named Preview in this folder too, it is also required-->
 	
 	<!-- Essential Tags-->
@@ -10,6 +10,7 @@
 	<supportedVersions>
 		<li>1.4</li>
 		<li>1.5</li>
+		<li>1.6</li>
 	</supportedVersions>
 
 	<description>This Mod allows the creation of a bill with blacklisted pawns. To blacklist a pawn choose the bill than select that pawn in the bill dialoq. Notice the blacklist Button, select correct option.</description>

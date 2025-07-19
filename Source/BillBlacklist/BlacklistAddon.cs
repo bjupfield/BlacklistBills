@@ -22,9 +22,9 @@ namespace BillBlacklist
             }
             return b.checkInstance(myBill);
         }
-        public static int changeInstance(Bill myBill, int change)
+        public static void changeInstance(Bill myBill, int change)
         {
-            if (myBill == null) return 0;
+            if (myBill == null) return;
             Map map = myBill.Map;
             MapComponent_BlacklistHold b = map.GetComponent<MapComponent_BlacklistHold>();
             if (b == null)
@@ -32,7 +32,8 @@ namespace BillBlacklist
                 b = new MapComponent_BlacklistHold(map);
                 map.components.Add(b);
             }
-            return b.changeInstance(myBill, change);
+            b.changeInstance(myBill, change);
+            return;
         }
         public static int deleteInstance(Bill myBill)
         {

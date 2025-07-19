@@ -44,8 +44,8 @@ public static class Dialog_BillConfig_ChangeDialog_Patch
         bool foundCodeSection = false;
         //this for loop looks for the section that renders the bill skill range
         //look at rim notes for the il lines to see what it is referencing, but it just checks
-        
-        for(int i = 0; i < lineList.Count; i++)
+
+        for (int i = 0; i < lineList.Count; i++)
         {
             if (lineList[i].opcode == OpCodes.Brtrue_S)
             {
@@ -71,181 +71,329 @@ public static class Dialog_BillConfig_ChangeDialog_Patch
                 }
             }
         }
-        int adjustPoint = 2;
-        while (!(lineList[adjustPoint].ToString().Contains("ldloc") && lineList[adjustPoint - 1].ToString().Contains("pop") && lineList[adjustPoint - 2].ToString().Contains("Listing_Standard::IntRange")))
-        {
-            adjustPoint++;
-        }
-        int copyPoint = 2;
-        while (!(lineList[copyPoint + 1].ToString().Contains("ldloc") && lineList[copyPoint].ToString().Contains("brtrue") && lineList[copyPoint + 2].ToString().Contains("AllowedSkillRange")))
-        {
-            copyPoint++;
-        }
-        //start int = startint - 1 = copypoint
-        int jt3 = copyPoint;//need it to add il code to later
-        while (!(lineList[copyPoint].ToString().Contains("ldarg")))
-        {
-            copyPoint++;
-        }
-        CodeInstruction secondCopy = new CodeInstruction(OpCodes.Add, null);
-        secondCopy.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
-        secondCopy.opcode = lineList[copyPoint].opcode;
-        while (!(lineList[copyPoint].ToString().Contains("get_PawnRestriction")))
-        {
-            copyPoint--;
-        }
-        CodeInstruction get_pawnRestriction = new CodeInstruction(OpCodes.Add, null);
-        get_pawnRestriction.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
-        get_pawnRestriction.opcode = lineList[copyPoint].opcode;
-        while (!(lineList[copyPoint].ToString().Contains("Dialog_BillConfig::bill")))
-        {
-            copyPoint++;
-        }
-        CodeInstruction ldfld_billconfig_bill = new CodeInstruction(OpCodes.Add, null);
-        ldfld_billconfig_bill.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
-        ldfld_billconfig_bill.opcode = lineList[copyPoint].opcode;
-        while (!(lineList[copyPoint].ToString().Contains("ButtonText")))
-        {
-            copyPoint++;
-        }
-        CodeInstruction list_button_text = new CodeInstruction(OpCodes.Add, null);
-        list_button_text.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
-        list_button_text.opcode = lineList[copyPoint].opcode;
-        while (!(lineList[copyPoint].ToString().Contains("SoundDefOf")))
-        {
-            copyPoint++;
-        }
-        CodeInstruction SoundDefOf = new CodeInstruction(OpCodes.Add, null);
-        SoundDefOf.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
-        SoundDefOf.opcode = lineList[copyPoint].opcode;
-        while (!(lineList[copyPoint].ToString().Contains("PlayOneShotOnCamera")))
-        {
-            copyPoint++;
-        }
-        CodeInstruction PlayOneShot = new CodeInstruction(OpCodes.Add, null);
-        PlayOneShot.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
-        PlayOneShot.opcode = lineList[copyPoint].opcode;
 
+        /*
+         * Having Looked at the code again I have decided that I will write what I want the ilcode to look like, and the c# code it is creating here for future reference
+         * 
+         * C# ORIGINAL:
+         * 
+         *     Listing_Standard listing_Standard4 = listing_Standard.BeginSection(WorkerSelectionSubdialogHeight);
+	     *     Widgets.Dropdown(buttonLabel: (bill.PawnRestriction != null) ? bill.PawnRestriction.LabelShortCap : ((ModsConfig.IdeologyActive && bill.SlavesOnly) ? ((string)"AnySlave".Translate()) : ((ModsConfig.BiotechActive && bill.recipe.mechanitorOnlyRecipe) ? ((string)"AnyMechanitor".Translate()) : ((ModsConfig.BiotechActive && bill.MechsOnly) ? ((string)"AnyMech".Translate()) : ((!ModsConfig.BiotechActive || !bill.NonMechsOnly) ? ((string)"AnyWorker".Translate()) : ((string)"AnyNonMech".Translate()))))), rect: listing_Standard4.GetRect(30f), target: bill, getPayload: (Bill_Production b) => b.PawnRestriction, menuGenerator: (Bill_Production b) => GeneratePawnRestrictionOptions());
+	     *     if (bill.PawnRestriction == null && bill.recipe.workSkill != null && !bill.MechsOnly)
+	     *      {
+		 *          listing_Standard4.Label("AllowedSkillRange".Translate(bill.recipe.workSkill.label) + ":");
+		 *          listing_Standard4.IntRange(ref bill.allowedSkillRange, 0, 20);
+	     *      }
+	     *      listing_Standard.EndSection(listing_Standard4);
+	     * 
+	     * C# Our Adjustments:
+	     * 
+	     *      Listing_Standard listing_Standard4 = listing_Standard.BeginSection(WorkerSelectionSubdialogHeight);
+	     *      Widgets.Dropdown(buttonLabel: (bill.PawnRestriction != null) ? bill.PawnRestriction.LabelShortCap : ((ModsConfig.IdeologyActive && bill.SlavesOnly) ? ((string)"AnySlave".Translate()) : ((ModsConfig.BiotechActive && bill.recipe.mechanitorOnlyRecipe) ? ((string)"AnyMechanitor".Translate()) : ((ModsConfig.BiotechActive && bill.MechsOnly) ? ((string)"AnyMech".Translate()) : ((!ModsConfig.BiotechActive || !bill.NonMechsOnly) ? ((string)"AnyWorker".Translate()) : ((string)"AnyNonMech".Translate()))))), rect: listing_Standard4.GetRect(30f), target: bill, getPayload: (Bill_Production b) => b.PawnRestriction, menuGenerator: (Bill_Production b) => GeneratePawnRestrictionOptions());
+	     *      if(bill.PawnRestriction != null)
+	     *      {
+	     *          if(blackListAddon.checkInstance(bill))
+	     *          { 
+	     *              if(listing_Standard4.ButtonText("BlackListed")
+	     *              {
+	     *                  blackListAddon.changeInstance(bill);
+	     *                  SoundDefOf.Click.PlayOneShotOnCamera();
+	     *              }
+	     *          }
+	     *          else if(listing_Standard4.ButtonText("NotBlackListed"))
+	     *          {
+	     *              blackListAddon.ChangeInstance(bill));
+	     *              SoundDefOfClick.PlayOneShotOnCamera();
+	     *          }
+	     *      }
+	     *      else
+	     *      {
+	     *          if (bill.recipe.workSkill != null && !bill.MechsOnly)
+	     *          {
+		 *              listing_Standard4.Label("AllowedSkillRange".Translate(bill.recipe.workSkill.label) + ":");
+		 *              listing_Standard4.IntRange(ref bill.allowedSkillRange, 0, 20);
+	     *          }
+	     *      }
+	     *      listing_Standard.EndSection(listing_Standard4);
+	     *      
+	     * IL Original: (Its a bit long so only including the relevant sections from the above C# code)
+	     *      
+	     *      IL_0a5d: call void Verse.Widgets::Dropdown<class RimWorld.Bill_Production, class Verse.Pawn>(valuetype [UnityEngine.CoreModule]UnityEngine.Rect, !!0, class [mscorlib]System.Func`2<!!0, !!1>, class [mscorlib]System.Func`2<!!0, class [mscorlib]System.Collections.Generic.IEnumerable`1<valuetype Verse.Widgets/DropdownMenuElement`1<!!1>>>, string, class [UnityEngine.CoreModule]UnityEngine.Texture2D, string, class [UnityEngine.CoreModule]UnityEngine.Texture2D, class [mscorlib]System.Action, bool)
+	     *      if(bill.PawnRestriction == null)
+	     *      IL_0a62: ldarg.0
+	     *      IL_0a63: ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+	     *      IL_0a68: callvirt instance class Verse.Pawn RimWorld.Bill::get_PawnRestriction()
+	     *      IL_0a6d: brtrue.s IL_0ae0
+	     *      if(bill.recipe.workSkill != null)
+         *      IL_0a6f: ldarg.0
+	     *      IL_0a70: ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+	     *      IL_0a75: ldfld class Verse.RecipeDef RimWorld.Bill::recipe
+	     *      IL_0a7a: ldfld class RimWorld.SkillDef Verse.RecipeDef::workSkill
+	     *      IL_0a7f: brfalse.s IL_0ae0
+	     *      if(!bill.MechsOnly)
+	     *      IL_0a81: ldarg.0
+	     *      IL_0a82: ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+	     *      IL_0a87: callvirt instance bool RimWorld.Bill::get_MechsOnly()
+	     *      IL_0a8c: brtrue.s IL_0ae0
+	     *      begins listing_Standard4.Label("AllowedSkillRange".translate(bill.recipe.workSkill.label) + ":");
+	     *      IL_0a8e: ldloc.s 23
+	     *      IL_0a90: ldstr "AllowedSkillRange"
+	     *      IL_0a95: ldarg.0
+	     *      ...
+	     *      ...
+	     *      ...
+	     *      listing_Standard.EndSection(listing_Standard4);
+	     *      IL_0ae0: ldloc.s 5
+	     *      IL_0ae2: ldloc.s 23
+	     *      IL_0ae4: callvirt instance void Verse.Listing_Standard::EndSection(class Verse.Listing_Standard)
+	     *      listing_Standard.End();
+	     *      IL_0ae9: ldloc.s 5
+	     *      IL_0aeb: callvirt instance void Verse.Listing::End()
+	     *      
+	     * IL Our Adjustments:
+	     *      
+	     *      IL_0a5d: call void Verse.Widgets::Dropdown<class RimWorld.Bill_Production, class Verse.Pawn>(valuetype [UnityEngine.CoreModule]UnityEngine.Rect, !!0, class [mscorlib]System.Func`2<!!0, !!1>, class [mscorlib]System.Func`2<!!0, class [mscorlib]System.Collections.Generic.IEnumerable`1<valuetype Verse.Widgets/DropdownMenuElement`1<!!1>>>, string, class [UnityEngine.CoreModule]UnityEngine.Texture2D, string, class [UnityEngine.CoreModule]UnityEngine.Texture2D, class [mscorlib]System.Action, bool)
+	     *      if(bill.PawnRestriction != null)
+	     *      IL_0a62: ldarg.0
+	     *      IL_0a63: ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+	     *      IL_0a68: callvirt instance class Verse.Pawn RimWorld.Bill::get_PawnRestriction()
+	     *      IL_0a6d: brfalse.s IL_0a6f
+	     *      
+	     *      (no IL_Labels because we don't create them)
+	     *      if(blackListAddon.checkInstance(bill))
+	     *      ldarg.0
+	     *      ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+	     *      call static System.Int32 BillBlackListAddon::checkInstance(class RimWorld.Bill)
+	     *      brfalse_s L1
+	     *      
+	     *      if(listing_Standard4.ButtonText("BlackListed")
+	     *      ldloc.s listing_Standard4 Address
+	     *      ldstr "BlackListed"
+	     *      ldNull null
+	     *      ldc.r4 1
+	     *      callvirt instance bool Verse.Listing_Standard::ButtonText(string, string, float32)
+	     *      brfalse.s IL_0ae0
+	     *      
+	     *      blackListAddon.changeInstance(bill, 0);
+	     *      ldarg.0
+	     *      ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+	     *      ldc.i4 0
+	     *      call static System.Int32 BillBlackListAddon::changeInstance(class RimWorld.bill, System.Int32 change)
+	     *      
+	     *      SoundDefOf.Click.PlayOneShotOnCamera();
+	     *      ldsfld class Verse.SoundDef RimWorld.SoundDefOf::Click
+	     *      ldnull
+	     *      call void Verse.Sound.SoundStarter::PlayOneShotOnCamera(class Verse.SoundDef, class Verse.Map)
+	     *      br IL_0ae0
+	     *      
+	     *      else if(listing_Standard4.ButtonText("NotBlackListed"))
+	     * L1   ldloc.s listing_Standard4 Address
+	     *      ldstr "NotBlackListed"
+	     *      ldNull null
+	     *      ldc.r4 1
+	     *      callvirt instance bool Verse.Listing_Standard::ButtonText(string, string, float32)
+	     *      brfalse.s IL_0ae0
+	     *      
+	     *      blackListAddon.changeInstance(bill, 1);
+	     *      ldarg.0
+	     *      ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+	     *      ldc.i4 1
+	     *      call static System.Int32 BillBlackListAddon::changeInstance(class RimWorld.bill, System.Int32 change)
+	     *      
+	     *      SoundDefOf.Click.PlayOneShotOnCamera();
+	     *      ldsfld class Verse.SoundDef RimWorld.SoundDefOf::Click
+	     *      ldnull
+	     *      call void Verse.Sound.SoundStarter::PlayOneShotOnCamera(class Verse.SoundDef, class Verse.Map)
+	     *      
+	     *      else
+	     *      br.s IL_0ae0
+	     *      
+	     *      if(bill.recipe.workSkill != null)
+         *      IL_0a6f: ldarg.0
+	     *      IL_0a70: ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+	     *      IL_0a75: ldfld class Verse.RecipeDef RimWorld.Bill::recipe
+	     *      IL_0a7a: ldfld class RimWorld.SkillDef Verse.RecipeDef::workSkill
+	     *      IL_0a7f: brfalse.s IL_0ae0
+	     *      if(!bill.MechsOnly)
+	     *      IL_0a81: ldarg.0
+	     *      IL_0a82: ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+	     *      IL_0a87: callvirt instance bool RimWorld.Bill::get_MechsOnly()
+	     *      IL_0a8c: brtrue.s IL_0ae0
+	     *      begins listing_Standard4.Label("AllowedSkillRange".translate(bill.recipe.workSkill.label) + ":");
+	     *      IL_0a8e: ldloc.s 23
+	     *      IL_0a90: ldstr "AllowedSkillRange"
+	     *      IL_0a95: ldarg.0
+	     *      ...
+	     *      ...
+	     *      ...
+	     *      listing_Standard.EndSection(listing_Standard4);
+	     *      IL_0ae0: ldloc.s 5
+	     *      IL_0ae2: ldloc.s 23
+	     *      IL_0ae4: callvirt instance void Verse.Listing_Standard::EndSection(class Verse.Listing_Standard)
+	     *      listing_Standard.End();
+	     *      IL_0ae9: ldloc.s 5
+	     *      IL_0aeb: callvirt instance void Verse.Listing::End()
+        */
 
         if (startInt != -1 && endInt != -1)
         {
+            //this section copies il operations that I don't know how to write
+            int copyPoint = 2;
 
-            //this section creates the if statement
+            //copies the location of the address that listing_standard4 is saved
+            while (!(lineList[copyPoint].ToString().Contains("stloc") && lineList[copyPoint - 1].ToString().Contains("Listing_Standard::BeginSection") && lineList[copyPoint + 3].ToString().Contains("get_PawnRestriction")))
+            {
+                copyPoint++;
+            }
+            int list_Standard4Address = copyPoint;
+
+
+            //copies the location jump_label from if (bill.PawnRestriction == null && bill.recipe.workSkill != null && !bill.MechsOnly)
+            //which currently is IL_0ae0
+            while (!(lineList[copyPoint].ToString().Contains("brtrue") && lineList[copyPoint + 1].ToString().Contains("ldloc") && lineList[copyPoint + 2].ToString().Contains("AllowedSkillRange")))
+            {
+                copyPoint++;
+            }
+            int jumpPawnRestrictionIsNull = copyPoint;
+
+            //copies the load field operation ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+            while (!(lineList[copyPoint].ToString().Contains("Dialog_BillConfig::bill")))
+            {
+                copyPoint++;
+            }
+            CodeInstruction ldfld_dialog_billconfig_bill = new CodeInstruction(OpCodes.Add, null);
+            ldfld_dialog_billconfig_bill.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
+            ldfld_dialog_billconfig_bill.opcode = lineList[copyPoint].opcode;
+
+            //copies the call operation callvirt instance bool Verse.Listing_Standard::ButtonText(string, string, float32)
+            while (!(lineList[copyPoint].ToString().Contains("ButtonText")))
+            {
+                copyPoint++;
+            }
+            CodeInstruction call_buttontext = new CodeInstruction(OpCodes.Add, null);
+            call_buttontext.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
+            call_buttontext.opcode = lineList[copyPoint].opcode;
+
+            //copies the load static field operation ldsfld class Verse.SoundDef RimWorld.SoundDefOf::Click
+            while (!(lineList[copyPoint].ToString().Contains("SoundDefOf")))
+            {
+                copyPoint++;
+            }
+            CodeInstruction ldsfld_sounddefof = new CodeInstruction(OpCodes.Add, null);
+            ldsfld_sounddefof.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
+            ldsfld_sounddefof.opcode = lineList[copyPoint].opcode;
+
+            //copies the call operation of call void Verse.Sound.SoundStarter::PlayOneShotOnCamera(class Verse.SoundDef, class Verse.Map)
+            while (!(lineList[copyPoint].ToString().Contains("PlayOneShotOnCamera")))
+            {
+                copyPoint++;
+            }
+            CodeInstruction call_playoneshotoncamera = new CodeInstruction(OpCodes.Add, null);
+            call_playoneshotoncamera.operand = lineList[copyPoint].operand != null ? lineList[copyPoint].operand : null;
+            call_playoneshotoncamera.opcode = lineList[copyPoint].opcode;
+
+            //finds the insert location
+            int adjustPoint = 7;
+            while (!(lineList[adjustPoint].ToString().Contains("brtrue") && lineList[adjustPoint - 1].ToString().Contains("get_PawnRestriction") && lineList[adjustPoint - 2].ToString().Contains("Dialog_BillConfig::bill") && lineList[adjustPoint + 1].ToString().Contains("ldarg")))
+            {
+                adjustPoint++;
+            }
+
+
+            //our lines that we insert into the provided lines
             List<CodeInstruction> myInstructs = new List<CodeInstruction>();
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldarg_0, null));
-            myInstructs.Add(ldfld_billconfig_bill);
-            myInstructs.Add(get_pawnRestriction);//this is callvirt instance class Verse.Pawn RimWorld.Bill::get_PawnRestriction()?
-            myInstructs.Add(new CodeInstruction(OpCodes.Brfalse_S));//might need to be true
-            int jf1 = myInstructs.Count - 1;
-            Type[] forFunc = { typeof(string), typeof(Int32), typeof(string)};
+
+            //changes the if (bill.PawnRestriction == null) into if (bill.PawnRestriction != null)
+            myInstructs.Add(new CodeInstruction(OpCodes.Brfalse));//brfalse_s IL_0ae0
+            int jumpNull = myInstructs.Count - 1;//saves the location, yes i know its zero to insert the jump label operand later
+
+            //if(blackListAddon.checkInstance(bill))
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldarg_0));//ldarg.0
+            myInstructs.Add(ldfld_dialog_billconfig_bill);//ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+            myInstructs.Add(CodeInstruction.Call(typeof(BillBlacklist.BlacklistAddon), "checkInstance"));//call static System.Int32 BillBlackListAddon::checkInstance(class RimWorld.Bill)
+            myInstructs.Add(new CodeInstruction(OpCodes.Brfalse));//brfalse_s L1
+            int jumpInstance = myInstructs.Count - 1;
+
+            //if(listing_Standard4.ButtonText("BlackListed")
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldloc_S, lineList[list_Standard4Address].operand));//ldloc.s listing_Standard4 Address
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldstr, "BlackListed"));//ldstr "BlackListed"
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldnull));//ldNull null
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldc_R4, 1.0f));//ldc.r4 1
+            myInstructs.Add(call_buttontext);//callvirt instance bool Verse.Listing_Standard::ButtonText(string, string, float32)
+            myInstructs.Add(new CodeInstruction(OpCodes.Brfalse));//brfalse.s IL_0ae0
+            List<int> jumpNotNull = new List<int>();
+            jumpNotNull.Add(myInstructs.Count - 1);
+
+            //blackListAddon.changeInstance(bill, 0);
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldarg_0));//ldarg.0
+            myInstructs.Add(ldfld_dialog_billconfig_bill);//ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldc_I4, 0));//ldc.i4 0
+            myInstructs.Add(CodeInstruction.Call(typeof(BillBlacklist.BlacklistAddon), "changeInstance"));//call static System.Int32 BillBlackListAddon::changeInstance(class RimWorld.bill, System.Int32 change)
+
+            //      SoundDefOf.Click.PlayOneShotOnCamera();
+            myInstructs.Add(ldsfld_sounddefof);//ldsfld class Verse.SoundDef RimWorld.SoundDefOf::Click
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldnull, null));//ldnull
+            myInstructs.Add(call_playoneshotoncamera);//call void Verse.Sound.SoundStarter::PlayOneShotOnCamera(class Verse.SoundDef, class Verse.Map)
+            myInstructs.Add(new CodeInstruction(OpCodes.Br));//br IL_0ae0
+            jumpNotNull.Add(myInstructs.Count - 1);
+
+            //else if(listing_Standard4.ButtonText("NotBlackListed"))
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldloc_S, lineList[list_Standard4Address].operand));//ldloc.s listing_Standard4 Address
+            int labelElse = myInstructs.Count - 1;//location to jump to from if(blackListAddon.checkInstance(bill))
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldstr, "Not Blacklisted"));//ldstr "NotBlackListed"
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldnull));//ldNull null
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldc_R4, 1.0f));//ldc.r4 1
+            myInstructs.Add(call_buttontext);//callvirt instance bool Verse.Listing_Standard::ButtonText(string, string, float32)
+            myInstructs.Add(new CodeInstruction(OpCodes.Brfalse));//brfalse.s IL_0ae0
+            jumpNotNull.Add(myInstructs.Count - 1);
+
+            //blackListAddon.changeInstance(bill, 1);
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldarg_0));//ldarg.0
+            myInstructs.Add(ldfld_dialog_billconfig_bill);//ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldc_I4, 1));//ldc.i4 1
+            myInstructs.Add(CodeInstruction.Call(typeof(BillBlacklist.BlacklistAddon), "changeInstance"));//call static System.Int32 BillBlackListAddon::changeInstance(class RimWorld.bill, System.Int32 change)
+
+            //      SoundDefOf.Click.PlayOneShotOnCamera();
+            myInstructs.Add(ldsfld_sounddefof);//ldsfld class Verse.SoundDef RimWorld.SoundDefOf::Click
+            myInstructs.Add(new CodeInstruction(OpCodes.Ldnull, null));//ldnull
+            myInstructs.Add(call_playoneshotoncamera);//call void Verse.Sound.SoundStarter::PlayOneShotOnCamera(class Verse.SoundDef, class Verse.Map)     
+
+            //"else"
+            myInstructs.Add(new CodeInstruction(OpCodes.Br));//br.s IL_0ae0
+            jumpNotNull.Add(myInstructs.Count - 1);
+
+            //label assignments
+
+            //for jumping past the bill.PawnRestrictions == null block
+            //Label jumpNullLabel = il.DefineLabel();//remove
+            for (int i = 0; i < jumpNotNull.Count; i++)
+            {
+                myInstructs[jumpNotNull[i]].operand = lineList[jumpPawnRestrictionIsNull].operand;
+                //myInstructs[jumpNotNull[i]].operand = jumpNullLabel;
+            }
+
+            //for jumping to if (listing_Standard4.ButtonText("NotBlackListed"))
+            Label jumpInstanceLabel = il.DefineLabel();
+            myInstructs[labelElse].labels.Add(jumpInstanceLabel);
+            myInstructs[jumpInstance].operand = jumpInstanceLabel;
 
 
-
-            //if statment for if(blackListAddon.checkInstance(bill))
-
-
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldarg_0));
-            myInstructs.Add(ldfld_billconfig_bill);//this is ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
-            myInstructs.Add(CodeInstruction.Call(typeof(BillBlacklist.BlacklistAddon), "checkInstance"));
-            myInstructs.Add(new CodeInstruction(OpCodes.Brfalse));//need to add operand label to this
-            int jf2 = myInstructs.Count - 1;//need to jump to second if statement: else if(listingstandard4.buttontext("NotBlacklisted".Translate()))
-
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldloc_S, 21));
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldstr, "BlackListed"));//blacklisted
-
-            // I dont know for some reason translate doesnt work not going to question it, might need to actually have the word blacklisted in it or something
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldnull));
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldc_R4, 1.0f));
-            myInstructs.Add(list_button_text);//this is callvirt instance bool Verse.Listing_Standard::ButtonText(string, string, float32)
-            myInstructs.Add(new CodeInstruction(OpCodes.Brfalse_S));//needs to send to start of the next if statement, this is [11]
-            int jf3 = myInstructs.Count - 1;
-
-
-            //end of if statement
-            //start of statement
-            //BlacklistAddon.changeInstance(bill, );
-            //SoundDefOf.CLick.PLayOneShotOnCamera();
-
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldarg_0));
-            myInstructs.Add(ldfld_billconfig_bill);//this is ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldc_I4, 0));
-            myInstructs.Add(CodeInstruction.Call(typeof(BillBlacklist.BlacklistAddon), "changeInstance"));
-            myInstructs.Add(new CodeInstruction(OpCodes.Pop));
-
-            myInstructs.Add(SoundDefOf);//this is ldsfld class Verse.SoundDef RimWorld.SoundDefOf::Click
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldnull, null));//this is ldnull, obviously didnt need to do this one but thought it would be more clear
-            myInstructs.Add(PlayOneShot);//call void Verse.Sound.SoundStarter::PlayOneShotOnCamera(class Verse.SoundDef, class Verse.Map)
-            //end of stateement
-            //jump over statement because it needs to be else if, and else needs to be jumped over if it is true
-
-            myInstructs.Add(new CodeInstruction(OpCodes.Br));//need to add an operand of label to this one too
-            int jf4 = myInstructs.Count - 1;
-            int jt1 = jf4;
-
-            //if statement for if statement section if(listingstandard4.buttontext("NotBlacklisted".Translate()))
-
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldloc_S, 21));
-            int jt2 = myInstructs.Count - 1;
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldstr, "Not Blacklisted"));//not blacklisted
-            //myInstructs.Add(lineList[endInt + 29]);//this is call valuetype Verse.TaggedString Verse.Translator::Translate(string)
-            //myInstructs.Add(lineList[endInt + 30]);//this is call string Verse.TaggedString::op_Implicit(valuetype Verse.TaggedString)
-            // I dont know for some reason translate doesnt work not going to question it, might need to actually have the word blacklisted in it or something
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldnull));
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldc_R4, 1.0f));
-            myInstructs.Add(list_button_text) ;//this is callvirt instance bool Verse.Listing_Standard::ButtonText(string, string, float32)
-            myInstructs.Add(new CodeInstruction(OpCodes.Brfalse_S));//needs to send to after the next statement, this is [11]
-            int jf5 = myInstructs.Count - 1;
-
-            //end of if statement
-            //start of statement
-            //BlacklistAddon.changeInstance(bill, true);
-            //SoundDefOf.Click.PlayOneShotOnCamera();
-
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldarg_0));
-            myInstructs.Add(ldfld_billconfig_bill);//this is ldfld class RimWorld.Bill_Production RimWorld.Dialog_BillConfig::bill
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldc_I4, 1));
-            myInstructs.Add(CodeInstruction.Call(typeof(BillBlacklist.BlacklistAddon), "changeInstance"));
-            myInstructs.Add(new CodeInstruction(OpCodes.Pop));
-
-            myInstructs.Add(SoundDefOf);//this is ldsfld class Verse.SoundDef RimWorld.SoundDefOf::Click
-            myInstructs.Add(new CodeInstruction(OpCodes.Ldnull, null));//this is ldnull, obviously didnt need to do this one but thought it would be more clear
-            myInstructs.Add(PlayOneShot);//call void Verse.Sound.SoundStarter::PlayOneShotOnCamera(class Verse.SoundDef, class Verse.Map)
-
-            //end of statement
-            //assignments of jump values, basically just saying at the end of if statements jump to after the new statement that I just made
-            ////////////////////////////////////////////////////////////////
-            ///definition
-            ///j = jump, t = to, f = from, s = saved, number what jumping from or too
-            Label jt1Label = il.DefineLabel();
-            myInstructs[jt1].labels.Add(jt1Label);
-
-            Label jt2Label = il.DefineLabel();
-            myInstructs[jt2].labels.Add(jt2Label);
-
-            Label jtStart = il.DefineLabel();
-            myInstructs[0].labels.Add(jtStart);
-
-            myInstructs[jf1].operand = lineList[jt3].operand;
-            myInstructs[jf2].operand = jt2Label;
-            myInstructs[jf3].operand = jt1Label;
-            myInstructs[jf4].operand = lineList[jt3].operand;
-            myInstructs[jf5].operand = lineList[jt3].operand;
-
-
-            //set pawn == null to send to our function, as it checks that before the allowed skill range
-            //retrieve it
-            while (!(lineList[copyPoint].ToString().Contains("brtrue") && lineList[copyPoint - 1].ToString().Contains("get_PawnRestriction") && lineList[copyPoint - 2].ToString().Contains("Dialog_BillConfig::bill") && lineList[copyPoint + 1].ToString().Contains("ldarg")))
+            //for jumping into the bill.PawnRestrictions == null block
+            Label jumpNullLabel = il.DefineLabel();
+            while (!(lineList[copyPoint].ToString().Contains("ldarg") && lineList[copyPoint + 1].ToString().Contains("Dialog_BillConfig::bill") && lineList[copyPoint + 2].ToString().Contains("Bill::recipe") && lineList[copyPoint + 3].ToString().Contains("RecipeDef::workSkill") && lineList[copyPoint + 4].ToString().Contains("brfalse")))
             {
                 copyPoint--;
             }
-            ////assogn it
-            lineList[copyPoint].operand = jtStart;
+            lineList[copyPoint].labels.Add(jumpNullLabel);
+            myInstructs[jumpNull].operand = jumpNullLabel;
+
+            lineList.RemoveAt(adjustPoint);//remove brtrue.s IL_0ae0 to be replaced by brfalse.s IL_0a6f
+
 
             //////////////////////////////////////////////////////////////////
             lineList.InsertRange(adjustPoint, myInstructs);
 
         }
-
         return lineList;
         //return null;
     }
